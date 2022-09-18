@@ -1,10 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
+import ExcelCard from './ExcelCard';
 
 function App() {
   return (
     <div>
-        Excel Card
+        <ExcelCard />
     </div>
   );
 }
