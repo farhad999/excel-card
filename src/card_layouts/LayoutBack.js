@@ -1,10 +1,14 @@
 import React from "react";
 
-function Layout1({image}) {
+function Layout1({layout}) {
+
+    let {width, height, backImage} = layout;
+
+    let style = {width: width+'mm', height: height+"mm"}
 
     return (
-        <div className={'layout1'}>
-            <img className={'layout-image'} src={image} alt={'back'}/>
+        <div style={style}>
+            <img className={'layout-image'} src={backImage} alt={'back'}/>
         </div>
     )
 

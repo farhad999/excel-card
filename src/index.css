@@ -1,28 +1,25 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* button */
+.btn {
+  @apply py-1.5 cursor-pointer px-4 transition
+  ease-in duration-200 text-center font-semibold shadow-md outline-0
+  disabled:opacity-60 focus-visible:outline-0 min-w-[64px] rounded-sm
+  inline-flex items-center;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.btn-primary {
+  @apply bg-blue-700 hover:bg-blue-600 text-white;
 }
 
-/* Layout */
-
-.layout1{
-  width: 50mm;
-  height: 20mm;
-  background-color: rgba(128, 205, 215, 0.37);
+.btn-gradient {
+  @apply bg-gradient-to-r from-cyan-500 to-blue-500 text-white;
 }
 
-.layout-image{
-  object-fit: contain;
-  width: 100%;
+.btn-round {
+  @apply rounded-lg;
 }
 
 .main-layout{
@@ -33,17 +30,6 @@ code {
   margin: 2mm 0;
 }
 
-/* Flexbox */
-
-.flex{
-  display: flex;
-}
-.items-center{
-  align-items: center;
-}
-.justify-between{
-  justify-content: space-between;
-}
-.justify-center{
-  justify-content: center;
+body{
+  @apply bg-gray-100;
 }

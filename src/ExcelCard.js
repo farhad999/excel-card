@@ -7,17 +7,20 @@ import Layout from "./card_layouts/front/Layout";
 import MainLayout from "./card_layouts/MainLayout";
 import Back from './assets/back.jpg'
 import LayoutBack from "./card_layouts/LayoutBack";
+import BackClearConnect from './assets/Back_ClearConnect.jpg'
+import BackInternational from './assets/Back_Internation.jpg'
 import {config} from "./config";
+import clsx from 'clsx'
 
 function ExcelCard() {
 
     const fileRef = React.useRef();
 
-    const [fileName, setFileName] = React.useState();
+    const [fileName, setFileName] = React.useState('');
 
     const [data, setData] = React.useState([]);
 
-    const [selectedLayout, setSelectedLayout] = React.useState('layout1');
+    const [selectedLayoutIndex, setSelectedLayoutIndex] = React.useState(0);
 
     const printableRef = React.useRef();
 
@@ -29,13 +32,29 @@ function ExcelCard() {
 
     const [numberOfItemsPerPage, setNumberOfItemsPerPage] = React.useState(3);
 
+    const [validationError, setValidationError] = React.useState('');
+
     //layouts
     const layouts = [{
         title: 'layout1',
         width: 50,
         height: 20,
-        backImage: <Back/>
+        backImage: Back
+    }, {
+        title: 'layout2',
+        width: 50,
+        height: 20,
+        backImage: BackClearConnect,
+    }, {
+        title: 'layout3',
+        width: 50,
+        height: 20,
+        backImage: BackInternational,
     }];
+
+    React.useEffect(() => {
+
+    }, []);
 
     const onFileSelect = async (event) => {
         const file = event.target.files[0];
@@ -46,8 +65,6 @@ function ExcelCard() {
 
         const wb = read(fileData);
 
-        console.log("array", wb);
-
         let sheets = wb.SheetNames;
 
         let allData = [];
@@ -55,11 +72,19 @@ function ExcelCard() {
         for (let sheet of sheets) {
             let ws = wb.Sheets[sheet];
             const data = utils.sheet_to_json(ws);
-            console.log("sheet", sheet);
             allData = [...allData, ...data];
         }
 
-        let layout = layouts.find(item => item.title === selectedLayout);
+        //now validate
+
+        let isValid = validate(allData, ['serial_no', 'batch_no', 'pin', 'password']);
+
+        if (!isValid) {
+            return;
+        }
+        setValidationError("");
+
+        let layout = layouts[selectedLayoutIndex];
 
         let itemsPerRow = Math.floor(config.paperSize.width / layout.width);
 
@@ -70,8 +95,6 @@ function ExcelCard() {
         setRemainingItems(allData.slice(Math.max(allData.length - count, 0)));
 
         setData(allData.slice(0, allData.length - count))
-
-        console.log('fraction', count, numberOfItemsPerPage);
 
     };
 
@@ -95,52 +118,122 @@ function ExcelCard() {
         FileSaver.saveAs(data, new Date().toLocaleDateString() + 'template.xlsx');
     }
 
+    const validate = (data, requiredKeys) => {
+
+        for (let item of data) {
+
+            let check = requiredKeys.every(key => {
+
+                if (item.hasOwnProperty(key)) {
+                    let value = item[key];
+
+                    let length = typeof value === 'number' ? value.toString().length : value.length;
+
+                    return length > 0;
+                } else {
+                    return false;
+                }
+            })
+            if (!check) {
+                setValidationError('Validation Error: Row Number ' + +(item.__rowNum__ + 1));
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function remove() {
+        setFileName('');
+        setData([]);
+        setRemainingItems([]);
+    }
+
     return (
-        <div>
-            <h3>ExcelCard</h3>
+        <div className={'container max-w-screen-lg mx-auto'}>
 
-            <button onClick={downloadFile}>Download Template</button>
-
-            <div>
-                <h4>Import Excel File</h4>
-                <button onClick={() => fileRef.current.click()}>Import</button>
+            <div className={'flex items-center justify-between bg-blue-700 py-2 px-2'}>
+                <h3 className={'text-white text-lg'}>ExcelCard</h3>
+                <select className={'w-32 p-1 bg-white'} value={selectedLayoutIndex}
+                        onChange={(event) => setSelectedLayoutIndex(event.target.value)}>
+                    {layouts.map((item, index) => (
+                        <option value={index}>
+                            <div className={'capitalize'}>
+                                {item.title}
+                            </div>
+                        </option>
+                    ))}
+                </select>
             </div>
+
+            <div className={'shadow-sm border border-gray-50 bg-white py-2'}>
+                <div
+                    className={'text-center capitalize text-lg font-semibold'}>{layouts[selectedLayoutIndex].title}({layouts[selectedLayoutIndex].width}x{layouts[selectedLayoutIndex].height})
+                </div>
+
+                <div className={'flex justify-around'}>
+                    <LayoutBack layout={layouts[selectedLayoutIndex]}/>
+                    <Layout item={{serial_no: 'SERIAL_NO', batch_no: 'BATCH_NO', pin: "PIN", password: 'PASSWORD'}}
+                            layout={layouts[selectedLayoutIndex]}/>
+                </div>
+            </div>
+
+
+            {/*<div className={'my-1 flex justify-between border border-gray-200 py-3 px-2 shadow-sm rounded-md'}>
+                <h4 className={'text-lg'}>Import Excel File</h4>
+                <button className={'btn btn-primary'} onClick={() => fileRef.current.click()}>Import</button>
+            </div>*/}
 
             <input type={'file'} style={{display: 'none'}}
                    onChange={onFileSelect}
                    accept=".xlsx, .csv, .xls"
                    ref={fileRef}/>
 
-            {fileName &&
+            <div className={'flex justify-end space-x-1 my-3'}>
 
-                <div>
-                    <h4>{fileName}</h4>
-                    <button>Clear</button>
-                </div>
-            }
-            <div>
+                <button className={'btn btn-primary'} onClick={() => fileRef.current.click()}>Import</button>
+
+                <button className={'btn btn-primary'} onClick={downloadFile}>Download Template</button>
+
+                {/*<ComponentToPrint ref={printableRef}/>*/}
+
                 <ReactToPrint
-                    trigger={() => <button>Print this out!</button>}
-                    content={() => printableRef.current}
-                />
-                <div>
-
-                </div>
-                <ComponentToPrint ref={printableRef}/>
-            </div>
-
-            <div>
-                <ReactToPrint
-                    trigger={() => <button>Print Back Side</button>}
+                    trigger={() => <button className={'btn btn-primary'}>Print Back
+                        Side</button>}
                     content={() => printableBackRef.current}
                 />
-                <div>
 
-                </div>
-                <ComponentToPrint ref={printableBackRef}/>
+
             </div>
 
-            <div style={{display: 'none'}}>
+            {
+                /* section for showing data */
+            }
+
+            {fileName &&
+
+                <div
+                    className={'flex justify-between items-center my-2 shadow-sm rounded-md p-2 border border-gray-200 bg-white'}>
+                    <h4 className={'font-semibold'}>{fileName}</h4>
+                    {validationError ? <div>{validationError}</div>
+                        :
+                        <div className={'font-semibold'}>{data.length + remainingItems.length} Records</div>
+                    }
+
+                    <div className={'flex space-x-1'}>
+                        <button className={'btn bg-red-400'} onClick={remove}>Remove</button>
+                        <ReactToPrint
+                            trigger={() => <button
+                                className={clsx('btn btn-primary', {'hover:cursor-not-allowed': !data.length})}
+                                disabled={!data.length}>Print</button>}
+                            content={() => printableRef.current}
+                        />
+                    </div>
+
+                </div>
+            }
+
+            {/*<div>
 
                 <table>
                     <thead>
@@ -163,26 +256,29 @@ function ExcelCard() {
                     </tbody>
                 </table>
 
-            </div>
+            </div>*/}
 
             {
                 //Printable
             }
 
-            <div ref={printableRef}>
-                <MainLayout>
-                    {data.map((d, index) => {
-                        return <Layout key={index} item={d}/>
-                    })}
-                </MainLayout>
-                <div>
-                    <MainLayout width={remainingItems.length/numberOfItemsPerPage}>
-                        {remainingItems.map((d, index) => {
-                            return <Layout key={index} item={d}/>
+            <div style={{display: 'none'}}>
+                <div ref={printableRef}>
+                    <MainLayout>
+                        {data.map((d, index) => {
+                            return <Layout key={index} item={d} layout={layouts[selectedLayoutIndex]}/>
                         })}
                     </MainLayout>
+                    <div>
+                        <MainLayout width={remainingItems.length / numberOfItemsPerPage}>
+                            {remainingItems.map((d, index) => {
+                                return <Layout layout={layouts[selectedLayoutIndex]} key={index} item={d}/>
+                            })}
+                        </MainLayout>
+                    </div>
                 </div>
             </div>
+
 
             {
                 //Print backside
@@ -191,8 +287,8 @@ function ExcelCard() {
             <div style={{display: 'none'}}>
                 <div ref={printableBackRef}>
                     <MainLayout>
-                        {Array.from(Array(50), (e, i) => {
-                            return <LayoutBack image={Back}/>
+                        {Array.from(Array(52), (e, i) => {
+                            return <LayoutBack layout={layouts[selectedLayoutIndex]}/>
                         })}
                     </MainLayout>
                 </div>

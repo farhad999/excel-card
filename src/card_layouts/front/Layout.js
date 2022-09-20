@@ -1,16 +1,17 @@
 import React from "react";
 
-function Layout(props) {
+function Layout({layout, item}) {
 
-    let {item} = props;
+    let {width, height} = layout;
 
-    console.log('props', item);
+    let style = {width: width + "mm", height: height + 'mm'};
 
     return (
-        <div className={'layout1 flex items-center justify-center'}>
+        <div style={style} className={'flex items-center justify-center'}>
             <div style={{padding: '2px 4px'}}>
-                <div style={{padding: '5px 5px', backgroundColor:"grey"}}>
-                    <div>{item.pin} {item.password}</div>
+                <div className={'flex items-center justify-between'} style={{padding: '5px 5px', backgroundColor: "grey"}}>
+                    <div>{item.pin}</div>
+                    <div>{item.password}</div>
                 </div>
                 <div className={'flex justify-between'}>
                     <div>{item.batch_no}</div>
