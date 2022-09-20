@@ -5,9 +5,10 @@ import ReactToPrint from "react-to-print";
 import {ComponentToPrint} from "./ComponentPrint";
 import Layout from "./card_layouts/front/Layout";
 import MainLayout from "./card_layouts/MainLayout";
+import Back from './assets/back.jpg'
 import LayoutBack from "./card_layouts/LayoutBack";
-import BackClearConnect from './assets/back_clear_connect.jpg'
-import BackInternational from './assets/back_international.jpg'
+import BackClearConnect from './assets/Back_ClearConnect.jpg'
+import BackInternational from './assets/Back_Internation.jpg'
 import {config} from "./config";
 import clsx from 'clsx'
 
@@ -38,7 +39,7 @@ function ExcelCard() {
         title: 'layout1',
         width: 50,
         height: 20,
-        backImage: BackClearConnect,
+        backImage: Back
     }, {
         title: 'layout2',
         width: 50,
